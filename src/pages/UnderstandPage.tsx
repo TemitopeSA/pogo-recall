@@ -266,7 +266,7 @@ function Settings() {
         <h3 className="text-[14px] font-semibold">Research configuration</h3>
         <dl className="mt-3 space-y-2.5 text-[13px]">
           {[
-            ['Status', <span className="inline-flex items-center gap-1.5 text-[#2F7A3B]"><span className="h-1.5 w-1.5 rounded-full bg-c-green" />Completed</span>],
+            ['Status', <span key="status" className="inline-flex items-center gap-1.5 text-[#2F7A3B]"><span className="h-1.5 w-1.5 rounded-full bg-c-green" />Completed</span>],
             ['Completed in', '6 hours'],
             ['Method', 'AI-moderated video'],
             ['Eligibility', 'Verified purchase, then 60+ day gap'],

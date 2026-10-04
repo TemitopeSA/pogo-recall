@@ -131,9 +131,9 @@ export function ProjectsPage() {
           </div>
           <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
             {[
-              [<Activity size={14} />, 'Recall overview', routes.detect],
-              [<FlaskConical size={14} />, study.title, routes.understand],
-              [<Users size={14} />, 'Recovery campaign', routes.campaign],
+              [<Activity key="a" size={14} />, 'Recall overview', routes.detect],
+              [<FlaskConical key="f" size={14} />, study.title, routes.understand],
+              [<Users key="u" size={14} />, 'Recovery campaign', routes.campaign],
             ].map(([icon, label, to]) => (
               <button key={String(label)} onClick={() => navigate(to as string)} className="flex items-center gap-2 rounded-lg border border-line px-3 py-2.5 text-left text-[13px] hover:bg-canvas">
                 <span className="text-muted">{icon}</span><span className="truncate">{label}</span>

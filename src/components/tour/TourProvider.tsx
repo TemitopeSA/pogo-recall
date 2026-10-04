@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../../state/AppState'
 import { tourSteps, type TourStep } from './tourSteps'
 import { stages, type Stage } from '../app-shell/WorkflowStepper'
+import { track } from '@vercel/analytics'
 
 interface TourCtx {
   active: boolean
@@ -36,8 +37,10 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const location = useLocation()
   const appRef = useRef(app)
   const pathRef = useRef(location.pathname)
-  appRef.current = app
-  pathRef.current = location.pathname
+  useLayoutEffect(() => {
+    appRef.current = app
+    pathRef.current = location.pathname
+  })
 
   const [index, setIndex] = useState(-1)
   const [busy, setBusy] = useState(false)
@@ -83,6 +86,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
       tourSteps[indexRef.current]?.exit?.(appRef.current, 'back')
       indexRef.current = -1
     }
+    track('tour_started', { step: i + 1 })
     if (i === 0) {
       const a = appRef.current
       a.setDrawerId(null)
@@ -103,6 +107,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
     if (indexRef.current >= tourSteps.length - 1) {
       end()
       setSummaryOpen(true)
+      track('tour_completed')
       return
     }
     goTo(indexRef.current + 1, 'forward')
@@ -113,10 +118,14 @@ export function TourProvider({ children }: { children: ReactNode }) {
     goTo(indexRef.current - 1, 'back')
   }, [goTo])
 
-  // If the user navigates elsewhere mid-tour (e.g. browser back), the overlay simply waits for the target;
-  // leaving the Recall workflow entirely ends the tour.
+  // Browser back/forward mid-tour moves away from the step's screen; end the tour rather than
+  // spotlighting a target that is no longer there.
   useEffect(() => {
-    if (indexRef.current >= 0 && !busyRef.current && !location.pathname.startsWith('/signals/recall')) end()
+    const i = indexRef.current
+    if (i >= 0 && !busyRef.current && location.pathname !== tourSteps[i].route) {
+      end()
+      track('tour_exited', { step: i + 1, reason: 'navigated_away' })
+    }
   }, [location.pathname, end])
 
   const value: TourCtx = {
@@ -129,7 +138,10 @@ export function TourProvider({ children }: { children: ReactNode }) {
     startAtStage,
     next,
     back,
-    skip: end,
+    skip: () => {
+      if (indexRef.current >= 0) track('tour_exited', { step: indexRef.current + 1, reason: 'skipped' })
+      end()
+    },
     welcomeOpen,
     closeWelcome: () => { markSeen(); setWelcomeOpen(false) },
     summaryOpen,

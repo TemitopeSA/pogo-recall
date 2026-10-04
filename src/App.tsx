@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { AppProvider } from './state/AppState'
 import { ToastProvider } from './components/shared/Toast'
 import { TourProvider } from './components/tour/TourProvider'
@@ -36,6 +37,7 @@ export default function App() {
           </TourProvider>
         </AppProvider>
       </ToastProvider>
+      <Analytics />
     </BrowserRouter>
   )
 }

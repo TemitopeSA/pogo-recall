@@ -12,6 +12,7 @@ import { forecast, isValid, offerSummary, validate } from '../data/campaignModel
 import { segmentById } from '../data/mockData'
 import { downloadCsv } from '../lib/util'
 import { routes, useApp } from '../state/AppState'
+import { track } from '@vercel/analytics'
 
 export function CampaignPage() {
   const app = useApp()
@@ -33,6 +34,7 @@ export function CampaignPage() {
   const onConfirm = async () => {
     setConfirmOpen(false)
     app.launch(c)
+    track('campaign_launched', { offer: c.offerType, segments: c.segments.join('+'), audience: f.audience, holdout: c.holdoutEnabled })
     toast('Campaign launched')
     await app.runTransition({ kind: 'days', label: '30 days later', sub: 'Collecting receipt-verified purchases' }, routes.results)
   }
@@ -76,7 +78,7 @@ export function CampaignPage() {
           </div>
         </div>
       </div>
-      <div className="sticky bottom-0 z-20 border-t border-line bg-white/95 px-8 py-3 backdrop-blur-none">
+      <div className="sticky bottom-0 z-20 border-t border-line bg-white py-3 pl-8 pr-20">
         <div className="mx-auto flex max-w-[1360px] flex-wrap items-center justify-between gap-3">
           <div className="text-[12px] text-muted">
             {offerSummary(c)} · {c.durationDays || '—'} days · {c.holdoutEnabled ? `${c.holdoutPct}% holdout` : 'No holdout'}

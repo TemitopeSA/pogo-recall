@@ -57,7 +57,7 @@ export function SegmentSelector() {
                 </label>
                 <div className="mt-2.5 flex items-center justify-between pl-7">
                   <ReasonTag reason={s.reason} />
-                  <button onClick={() => setDetail(detail === s.id ? null : s.id)} aria-expanded={detail === s.id} className="inline-flex items-center gap-1 text-[12px] font-medium text-brand hover:text-brand-hover">
+                  <button onMouseDown={(e) => e.stopPropagation()} onClick={() => setDetail(detail === s.id ? null : s.id)} aria-expanded={detail === s.id} className="inline-flex items-center gap-1 text-[12px] font-medium text-brand hover:text-brand-hover">
                     <Eye size={13} /> View segment
                   </button>
                 </div>

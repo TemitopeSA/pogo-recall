@@ -79,7 +79,7 @@ export function OfferConfiguration() {
         <div className={c.offerType === 'message' ? 'col-span-2' : ''}>
           <label htmlFor="of-duration" className="text-[12px] font-medium text-muted">Duration (days)</label>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
-            <input id="of-duration" type="number" min="3" max="60" aria-invalid={!!v.duration} aria-describedby="of-duration-err" value={c.durationDays} onChange={(e) => set({ durationDays: e.target.value })} className={cx(field, 'num w-16 shrink-0', v.duration ? 'border-c-coral' : 'border-line')} />
+            <input id="of-duration" type="number" min="3" max="60" aria-invalid={!!v.duration} aria-describedby="of-duration-err" value={c.durationDays} onChange={(e) => set({ durationDays: e.target.value })} className={cx(field.replace('w-full', ''), 'num w-16 shrink-0', v.duration ? 'border-c-coral' : 'border-line')} />
             <div className="flex gap-1">
               {durations.map((d) => (
                 <button key={d} onClick={() => set({ durationDays: d })} aria-label={`${d} days`} className={cx('num h-9 rounded-lg border px-2 text-[12px]', c.durationDays === d ? 'border-brand bg-lavender text-brand' : 'border-line text-muted hover:bg-canvas')}>{d}</button>

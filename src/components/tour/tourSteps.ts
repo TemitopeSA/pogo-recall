@@ -46,7 +46,7 @@ export const tourSteps: TourStep[] = [
     enter: (app) => { app.setDrawerId(null); app.setStudyTab('summary') },
   },
   {
-    id: 'key-finding', stage: 'understand', route: routes.understand, target: 'study-insight', placement: 'right',
+    id: 'key-finding', stage: 'understand', route: routes.understand, target: 'study-insight', placement: 'bottom', scrollBlock: 'start',
     title: 'Price is the biggest opportunity.',
     body: "Price leads the switching reasons at 38%. Among price-driven switchers, 62% say they'd return at $2.79 or less.",
     enter: (app) => { app.setDrawerId(null); app.setStudyTab('summary') },

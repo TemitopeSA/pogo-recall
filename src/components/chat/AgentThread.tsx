@@ -8,6 +8,7 @@ import { ThoughtRow } from '../respondents/RespondentDrawer'
 import { PogoMark } from '../shared/ui'
 import { useToast } from '../shared/Toast'
 import { copyText, cx, prefersReducedMotion } from '../../lib/util'
+import { track } from '@vercel/analytics'
 
 export function AvailabilityTable() {
   return (
@@ -113,6 +114,7 @@ export function useAgent(messages: ChatMessage[], setMessages: (fn: (m: ChatMess
     setThinking(true)
     setTimeout(() => {
       const answer = respond(text)
+      track('agent_question', { intent: answer.intent })
       setMessages((m) => [...m, { id: msgId(), role: 'assistant', text: '', answer }])
       setThinking(false)
       onAnswer?.(answer)
@@ -151,13 +153,12 @@ export function MessageList({ messages, thinking, onFollowUp, firstAnswerTour }:
     if (messages.length !== count.current || thinking) end.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     count.current = messages.length
   }, [messages.length, thinking])
-  let firstAssistant = true
+  const firstAssistantId = messages.find((m) => m.role === 'assistant')?.id
   return (
     <div className="space-y-6">
       {messages.map((m) => {
         if (m.role === 'user') return <UserBubble key={m.id} text={m.text} />
-        const tour = firstAssistant ? firstAnswerTour : undefined
-        firstAssistant = false
+        const tour = m.id === firstAssistantId ? firstAnswerTour : undefined
         return m.answer ? <div key={m.id} className="animate-rise-in"><AssistantMessage answer={m.answer} onFollowUp={onFollowUp} tourTarget={tour} /></div> : null
       })}
       {thinking && <Thinking />}

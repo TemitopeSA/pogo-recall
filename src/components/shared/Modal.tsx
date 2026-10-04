@@ -15,6 +15,8 @@ interface Props {
 export function Modal({ open, onClose, labelledBy, children, width = 'max-w-[480px]', dismissable = true, z = 'z-[70]' }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const prevFocus = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose })
 
   useEffect(() => {
     if (!open) return
@@ -24,9 +26,9 @@ export function Modal({ open, onClose, labelledBy, children, width = 'max-w-[480
       el?.focus({ preventScroll: true })
     }, 30)
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && dismissable && onClose) {
+      if (e.key === 'Escape' && dismissable && onCloseRef.current) {
         e.stopPropagation()
-        onClose()
+        onCloseRef.current()
       }
       if (e.key === 'Tab' && ref.current) {
         const f = Array.from(ref.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, textarea, select'))
@@ -42,7 +44,7 @@ export function Modal({ open, onClose, labelledBy, children, width = 'max-w-[480
       window.removeEventListener('keydown', onKey, true)
       prevFocus.current?.focus?.({ preventScroll: true })
     }
-  }, [open, onClose, dismissable])
+  }, [open, dismissable])
 
   if (!open) return null
   return (
