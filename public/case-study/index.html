@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pogo Recall Case Study</title>
+<meta name="description" content="A concept case study for Pogo Recall: detect lapsed buyers, learn why they left, win them back, and prove it with receipts.">
+<meta property="og:title" content="Pogo Recall Case Study">
+<meta property="og:description" content="From why they left to proof they came back. A concept feature for Pogo, with a clickable prototype.">
+<meta property="og:image" content="https://pogo-recall.vercel.app/case-study/assets/og.jpg">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: single editorial column (~1120px) with full-bleed product screenshots; a thermal receipt is the recurring "proof" motif. */
+:root{
+  --bg:#FBFAFE; --surface:#FFFFFF; --sunk:#F4F2FA; --ink:#100D18; --muted:#5F5A6E; --faint:#8F8A9E; --line:#E6E2F0;
+  --accent:#5B33D6; --accent-ink:#FFFFFF; --accent-soft:#EFEAFF; --accent-line:#CFC3FA;
+  --teal:#3A9C8B; --coral:#D8643C; --green:#2F8F55; --green-soft:#E6F4EA; --amber:#C98A16;
+  --paper:#FFFEFA; --paper-ink:#1A1622; --paper-line:#D9D4E3;
+  --shadow:0 1px 2px rgba(25,15,60,.06),0 12px 32px -12px rgba(25,15,60,.18);
+  --f-display:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Geist","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E0C14; --surface:#16131E; --sunk:#1C1826; --ink:#F2F0F8; --muted:#ADA8BD; --faint:#7E7890; --line:#2B2638;
+  --accent:#9C86FF; --accent-ink:#120C26; --accent-soft:#221B3B; --accent-line:#3E3366;
+  --teal:#5CC2B0; --coral:#F0875F; --green:#5BC283; --green-soft:#16281D; --amber:#E7B04A;
+  --paper:#F5F2EA; --paper-ink:#1A1622; --paper-line:#CFC9D9;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 16px 40px -16px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E0C14; --surface:#16131E; --sunk:#1C1826; --ink:#F2F0F8; --muted:#ADA8BD; --faint:#7E7890; --line:#2B2638;
+  --accent:#9C86FF; --accent-ink:#120C26; --accent-soft:#221B3B; --accent-line:#3E3366;
+  --teal:#5CC2B0; --coral:#F0875F; --green:#5BC283; --green-soft:#16281D; --amber:#E7B04A;
+  --paper:#F5F2EA; --paper-ink:#1A1622; --paper-line:#CFC9D9;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 16px 40px -16px rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-inline:20px;padding-block:0}
+a{color:var(--accent)}
+.wrap{max-width:1120px;margin-inline:auto}
+.narrow{max-width:720px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;letter-spacing:-.02em;margin:0}
+h1{font-size:clamp(2.4rem,5.6vw,4.4rem);line-height:1.02;font-weight:800}
+h2{font-size:clamp(1.8rem,3.4vw,2.6rem);line-height:1.08;font-weight:700}
+h3{font-size:1.2rem;line-height:1.25;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.lede{font-size:1.2rem;color:var(--muted);line-height:1.55}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-direction:column}
+section{padding-block:88px;border-top:1px solid var(--line)}
+section.first{border-top:0}
+.sec-head{display:grid;gap:14px;margin-bottom:44px;max-width:760px}
+.sec-head .eyebrow{display:flex;gap:10px;align-items:center}
+.sec-head .eyebrow b{font-weight:600;color:var(--faint)}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);margin-inline:-20px;padding:12px 20px}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1rem}
+.pmark{width:26px;height:26px;border-radius:7px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:16px}
+.toc{display:flex;gap:22px;font-size:.88rem}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:600;font-size:.95rem;text-decoration:none;border:1px solid transparent;transition:transform .15s ease,background .15s ease}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-ghost{border-color:var(--line);color:var(--ink);background:var(--surface)}
+.btn-sm{padding:8px 13px;font-size:.85rem}
+.btn:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr);gap:56px;align-items:center;padding-block:72px 64px}
+.hero-copy{display:grid;gap:24px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:18px;padding-top:22px;border-top:1px solid var(--line)}
+.meta dt{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.meta dd{margin:4px 0 0;font-size:.92rem;font-weight:500}
+
+/* receipt */
+.receipt-stage{position:relative;display:grid;place-items:center;padding:20px 0}
+.receipt-stage::before{content:"";position:absolute;inset:6% 4%;background:radial-gradient(closest-side,var(--accent-soft),transparent);z-index:0}
+.receipt{position:relative;z-index:1;width:min(100%,360px);background:var(--paper);color:var(--paper-ink);font-family:var(--f-mono);font-size:.82rem;line-height:1.5;padding:26px 24px 30px;transform:rotate(1.6deg);box-shadow:var(--shadow);
+  -webkit-mask:radial-gradient(circle 6px at 50% 0,transparent 98%,#000) top/14px 51% repeat-x,radial-gradient(circle 6px at 50% 100%,transparent 98%,#000) bottom/14px 51% repeat-x;
+          mask:radial-gradient(circle 6px at 50% 0,transparent 98%,#000) top/14px 51% repeat-x,radial-gradient(circle 6px at 50% 100%,transparent 98%,#000) bottom/14px 51% repeat-x}
+.receipt .r-head{text-align:center;display:grid;gap:2px;margin-bottom:14px}
+.receipt .r-head strong{font-family:var(--f-display);font-size:1.15rem;letter-spacing:.02em}
+.receipt .r-sub{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;opacity:.65}
+.receipt hr{border:0;border-top:1.5px dashed var(--paper-line);margin:12px 0}
+.receipt .row{display:flex;justify-content:space-between;gap:12px}
+.receipt .row span:first-child{opacity:.75}
+.receipt .total{font-weight:600;font-size:.95rem}
+.receipt .stamp{position:absolute;right:22px;bottom:150px;transform:rotate(-14deg);border:2px solid #2F8F55;color:#2F8F55;font-weight:600;letter-spacing:.14em;font-size:.72rem;padding:4px 9px;border-radius:6px;opacity:.9}
+.receipt .barcode{height:34px;margin-top:16px;background:repeating-linear-gradient(90deg,var(--paper-ink) 0 2px,transparent 2px 4px,var(--paper-ink) 4px 5px,transparent 5px 8px,var(--paper-ink) 8px 11px,transparent 11px 12px);opacity:.85}
+.receipt .tiny{font-size:.66rem;text-align:center;opacity:.55;margin-top:6px}
+
+/* tldr */
+.tldr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.tldr > div{padding:26px 24px;display:grid;gap:8px;align-content:start;border-left:1px solid var(--line)}
+.tldr > div:first-child{border-left:0}
+.tldr .k{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.tldr .v{font-family:var(--f-display);font-weight:700;font-size:1.12rem;line-height:1.3}
+.tldr p{font-size:.92rem;color:var(--muted)}
+
+/* loop diagram */
+.loop-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;overflow-x:auto}
+.loop-card svg{display:block;width:100%;min-width:680px;height:auto}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
+.prose{display:grid;gap:18px;max-width:640px}
+.prose p{color:var(--muted)}
+.prose strong{color:var(--ink);font-weight:600}
+.pull{font-family:var(--f-display);font-size:1.5rem;line-height:1.3;font-weight:600;letter-spacing:-.01em;border-left:3px solid var(--accent);padding-left:20px}
+
+/* matrix */
+.matrix-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+table.matrix{width:100%;border-collapse:collapse;min-width:640px;font-size:.93rem}
+.matrix th,.matrix td{padding:16px 18px;text-align:left;border-bottom:1px solid var(--line)}
+.matrix thead th{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:500;background:var(--sunk)}
+.matrix tbody tr:last-child td{border-bottom:0}
+.matrix td:not(:first-child),.matrix th:not(:first-child){text-align:center}
+.matrix tr.us td{background:var(--accent-soft);font-weight:600}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%}
+.dot.y{background:var(--accent)}
+.dot.p{background:transparent;border:2px solid var(--accent-line)}
+.dot.n{background:var(--line)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:14px}
+.legend span{display:inline-flex;gap:8px;align-items:center}
+
+/* founders */
+.people{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:14px;align-content:start}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:var(--f-display);font-weight:700}
+.person .who{display:flex;gap:12px;align-items:center}
+.person .who small{display:block;color:var(--faint);font-size:.8rem}
+.person .then{font-size:.9rem;color:var(--muted)}
+.person .now{font-size:.92rem;padding-top:14px;border-top:1px dashed var(--line)}
+.person .now b{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:4px;font-weight:500}
+
+/* walkthrough */
+.stage{display:grid;gap:28px;padding-block:56px;border-top:1px dashed var(--line)}
+.stage:first-of-type{border-top:0;padding-top:0}
+.stage-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:22px;align-items:end}
+.stage-num{font-family:var(--f-mono);font-size:.78rem;color:var(--accent);border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.stage-head p{color:var(--muted);margin-top:8px;max-width:620px}
+.stage-stat{text-align:right}
+.stage-stat .n{font-family:var(--f-mono);font-size:2rem;font-weight:500;letter-spacing:-.02em;line-height:1}
+.stage-stat .l{font-size:.8rem;color:var(--faint)}
+.shot{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);cursor:zoom-in}
+.shot .chrome{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--sunk)}
+.shot .chrome i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
+.shot .chrome span{margin-left:12px;font-family:var(--f-mono);font-size:.72rem;color:var(--faint);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.shot img{display:block;width:100%;height:auto}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.note{display:grid;gap:6px;align-content:start}
+.note .tag{font-family:var(--f-mono);font-size:.7rem;color:var(--accent);letter-spacing:.06em}
+.note p{font-size:.93rem;color:var(--muted)}
+.note h3{font-size:1.02rem}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:28px;align-items:start}
+.phone-fig{margin:0;display:grid;gap:12px;justify-items:center}
+.phone-fig img{width:100%;max-width:260px;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface);cursor:zoom-in}
+.phone-fig figcaption{font-size:.84rem;color:var(--muted);text-align:center}
+.quote-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.quote{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;gap:10px}
+.quote q{font-size:1rem;line-height:1.45;quotes:"\201C" "\201D"}
+.quote .by{font-size:.8rem;color:var(--faint)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;border-radius:999px;padding:3px 10px;background:var(--sunk);color:var(--muted);width:max-content}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c,var(--accent))}
+
+/* results */
+.results{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:16px;align-content:start;min-width:0}
+.panel h3{font-size:1.02rem}
+.panel .sub{font-size:.85rem;color:var(--faint);margin-top:-10px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .grid line{stroke:var(--line)}
+.chart text{fill:var(--faint);font-family:var(--f-mono);font-size:11px}
+.chart .lbl-t{fill:var(--accent);font-weight:600;font-size:12px}
+.chart .lbl-c{fill:var(--muted);font-size:12px}
+.funnel{display:grid;gap:14px}
+.f-row{display:grid;gap:6px}
+.f-top{display:flex;justify-content:space-between;gap:12px;font-size:.88rem}
+.f-top b{font-family:var(--f-mono);font-weight:500}
+.f-bar{height:12px;border-radius:6px;background:var(--sunk);overflow:hidden}
+.f-bar i{display:block;height:100%;border-radius:6px;background:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:24px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;gap:4px}
+.kpi .k{font-size:.8rem;color:var(--muted)}
+.kpi .v{font-family:var(--f-mono);font-size:1.7rem;letter-spacing:-.02em}
+.kpi .s{font-size:.75rem;color:var(--faint)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:500;padding:2px 8px;border-radius:999px;width:max-content}
+.badge.obs{background:var(--green-soft);color:var(--green)}
+.badge.mod{background:var(--sunk);color:var(--muted)}
+.disclaimer{font-size:.82rem;color:var(--faint);margin-top:18px}
+
+/* decisions */
+.decisions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.dec{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:10px;align-content:start}
+.dec .why{font-size:.92rem;color:var(--muted)}
+.dec .ico{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center}
+.dec .ico svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tour-split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:center}
+.tour-split img{width:100%;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);cursor:zoom-in}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:6px}
+.steps div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);font-size:.82rem;display:grid;gap:2px}
+.steps div b{font-family:var(--f-mono);font-weight:500;font-size:.7rem;color:var(--accent)}
+
+/* money + risks */
+.money{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.money .panel .big{font-family:var(--f-display);font-size:1.25rem;font-weight:700}
+.risks{display:grid;gap:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.risk{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr) auto;gap:24px;padding:20px 24px;border-top:1px solid var(--line);align-items:start}
+.risk:first-child{border-top:0}
+.risk h3{font-size:1rem}
+.risk p{font-size:.92rem;color:var(--muted)}
+.sev{font-family:var(--f-mono);font-size:.7rem;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.sev.h{background:color-mix(in srgb,var(--coral) 16%,transparent);color:var(--coral)}
+.sev.m{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+
+/* plan */
+.plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;position:relative}
+.wk{padding:0 24px 0 0;display:grid;gap:10px;align-content:start;position:relative}
+.wk .when{font-family:var(--f-mono);font-size:.74rem;color:var(--accent)}
+.wk .bar{height:4px;border-radius:2px;background:var(--accent);margin-bottom:8px}
+.wk:nth-child(2) .bar{opacity:.7}.wk:nth-child(3) .bar{opacity:.45}
+.wk ul{margin:0;padding-left:18px;color:var(--muted);font-size:.93rem;display:grid;gap:6px}
+.criteria{margin-top:32px;display:flex;flex-wrap:wrap;gap:10px}
+.criteria span{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.86rem}
+.criteria span b{font-family:var(--f-mono);font-weight:500;color:var(--accent)}
+
+/* closing */
+.closing{background:var(--ink);color:var(--bg);border-radius:24px;padding:56px 48px;display:grid;grid-template-columns:minmax(0,1.4fr) auto;gap:32px;align-items:center;margin-block:24px 72px}
+.closing h2{color:var(--bg)}
+.closing p{color:color-mix(in srgb,var(--bg) 70%,var(--ink));margin-top:12px}
+.closing .btn-primary{background:var(--bg);color:var(--ink)}
+footer{padding-block:0 48px;font-size:.82rem;color:var(--faint);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+
+/* lightbox */
+dialog.lb{border:0;padding:0;background:transparent;max-width:min(96vw,1700px);max-height:94vh}
+dialog.lb::backdrop{background:rgba(10,8,16,.82)}
+dialog.lb img{display:block;max-width:min(96vw,1700px);max-height:90vh;border-radius:10px}
+dialog.lb button{position:fixed;top:16px;right:16px;background:#fff;color:#111;border:0;border-radius:999px;padding:8px 14px;font:600 .85rem var(--f-body);cursor:pointer}
+
+@media (max-width:960px){
+  .hero,.two-col,.results,.split,.tour-split{grid-template-columns:minmax(0,1fr)}
+  .tldr{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tldr > div:nth-child(3){border-left:0}
+  .tldr > div:nth-child(n+3){border-top:1px solid var(--line)}
+  .people,.notes,.money,.quote-row,.plan{grid-template-columns:minmax(0,1fr)}
+  .plan{gap:28px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .toc{display:none}
+  .closing{grid-template-columns:minmax(0,1fr);padding:40px 28px}
+  .risk{grid-template-columns:minmax(0,1fr)}
+  .stage-head{grid-template-columns:minmax(0,1fr)}
+  .stage-stat{text-align:left}
+}
+@media (max-width:620px){
+  body{font-size:16px;padding-inline:16px}
+  .topbar{margin-inline:-16px;padding-inline:16px}
+  section{padding-block:64px}
+  .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tldr,.decisions,.kpis,.steps{grid-template-columns:minmax(0,1fr)}
+  .tldr > div{border-left:0;border-top:1px solid var(--line)}
+  .tldr > div:first-child{border-top:0}
+  .receipt{transform:none}
+  .topbar .btn span.hide-sm{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="pmark" aria-hidden="true">P</span>Pogo Recall</div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#why">Why</a><a href="#walkthrough">Walkthrough</a><a href="#results">Results</a><a href="#business">Business</a><a href="#pilot">Pilot</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="https://pogo-recall.vercel.app/" target="_blank" rel="noopener">Open prototype <span class="hide-sm">↗</span></a>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- HERO -->
+<section class="first hero" aria-labelledby="h1">
+  <div class="hero-copy">
+    <span class="eyebrow">Concept case study · Pogo Signals</span>
+    <h1 id="h1">From why they left to <em>proof they came back.</em></h1>
+    <p class="lede">Recall is a proposed Pogo feature that closes the loop between insight and revenue. It spots verified buyers who switched to a competitor, asks them why, sends a matching offer through the Pogo app, and proves who came back with real receipts.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="https://pogo-recall.vercel.app/" target="_blank" rel="noopener">Take the guided tour ↗</a>
+      <a class="btn btn-ghost" href="#walkthrough">Read the walkthrough</a>
+    </div>
+    <dl class="meta">
+      <div><dt>Prepared by</dt><dd>Temi</dd></div>
+      <div><dt>Date</dt><dd>October 2026</dd></div>
+      <div><dt>Format</dt><dd>Clickable prototype</dd></div>
+      <div><dt>Data</dt><dd>Fictional brand, mock data</dd></div>
+    </dl>
+  </div>
+
+  <div class="receipt-stage" aria-label="Campaign summary shown as a receipt">
+    <div class="receipt">
+      <div class="r-head">
+        <strong>POGO RECALL</strong>
+        <span class="r-sub">Ridgeline Protein Bar · 30-day run</span>
+      </div>
+      <hr>
+      <div class="row"><span>Verified buyers</span><span>12,480</span></div>
+      <div class="row"><span>Switched to competitor</span><span>1,904</span></div>
+      <div class="row"><span>Interviewed (6 hrs)</span><span>250</span></div>
+      <div class="row"><span>Offered $1.50 back</span><span>724</span></div>
+      <hr>
+      <div class="row"><span>Returned, offered</span><span>26.7%</span></div>
+      <div class="row"><span>Returned, holdout</span><span>6.2%</span></div>
+      <div class="row total"><span>LIFT</span><span>+20.5 PTS</span></div>
+      <hr>
+      <div class="row"><span>Cost per return</span><span>$3.86</span></div>
+      <div class="row total"><span>ROI (MODELED)</span><span>5.1x</span></div>
+      <div class="stamp">VERIFIED</div>
+      <div class="barcode" aria-hidden="true"></div>
+      <p class="tiny">Concept prototype · mock data · thank you for coming back</p>
+    </div>
+  </div>
+</section>
+
+<!-- TLDR -->
+<div class="tldr" role="list" aria-label="Summary">
+  <div role="listitem"><span class="k">The gap</span><span class="v">Pogo explains churn but stops before fixing it.</span><p>Brands take the insight elsewhere and can't tell if the fix worked.</p></div>
+  <div role="listitem"><span class="k">The idea</span><span class="v">Detect, understand, win back, prove, all in one workflow.</span><p>Built into Signals, using patterns Pogo's platform already has.</p></div>
+  <div role="listitem"><span class="k">Why only Pogo</span><span class="v">It sees the purchase, asks the why, and verifies the return.</span><p>Card panels can't ask. Interview tools can't see receipts.</p></div>
+  <div role="listitem"><span class="k">The prize</span><span class="v">Marketing and promotion budgets, not only research budgets.</span><p>Plus a recurring, measurable product for every brand on Pogo.</p></div>
+</div>
+
+<!-- WHY -->
+<section id="why" aria-labelledby="why-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>01</b> The opportunity</span>
+    <h2 id="why-h">Pogo already has three of the four pieces.</h2>
+    <p class="lede">Today a brand can use Pogo to find lapsed buyers and hear why they left. Then the trail goes cold: the brand runs a promotion somewhere else and has no clean way to know if it worked. Recall adds the missing step and turns a one-off study into an ongoing loop.</p>
+  </div>
+
+  <div class="loop-card">
+    <svg viewBox="0 0 940 300" role="img" aria-labelledby="loop-t loop-d">
+      <title id="loop-t">The Recall loop</title>
+      <desc id="loop-d">Four stages in sequence: Detect, Understand, Win back, Prove. Detect and Understand exist in Pogo today. Win back and Prove are new. Results from Prove feed back into Detect.</desc>
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--faint)"/></marker>
+        <marker id="ara" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+      </defs>
+      <!-- existing zone -->
+      <rect x="10" y="22" width="440" height="190" rx="16" fill="var(--sunk)" stroke="var(--line)"/>
+      <text x="30" y="48" font-family="var(--f-mono)" font-size="11" letter-spacing="1.2" fill="var(--faint)">IN POGO TODAY</text>
+      <rect x="470" y="22" width="460" height="190" rx="16" fill="var(--accent-soft)" stroke="var(--accent-line)" stroke-dasharray="5 5"/>
+      <text x="490" y="48" font-family="var(--f-mono)" font-size="11" letter-spacing="1.2" fill="var(--accent)">NEW WITH RECALL</text>
+
+      <g font-family="var(--f-display)">
+        <rect x="30" y="72" width="190" height="118" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="50" y="102" font-size="12" font-family="var(--f-mono)" fill="var(--faint)">01</text>
+        <text x="50" y="128" font-size="21" font-weight="700" fill="var(--ink)">Detect</text>
+        <text x="50" y="152" font-size="13" font-family="var(--f-body)" fill="var(--muted)">Receipts show who</text>
+        <text x="50" y="170" font-size="13" font-family="var(--f-body)" fill="var(--muted)">switched, and to whom</text>
+
+        <rect x="240" y="72" width="190" height="118" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="260" y="102" font-size="12" font-family="var(--f-mono)" fill="var(--faint)">02</text>
+        <text x="260" y="128" font-size="21" font-weight="700" fill="var(--ink)">Understand</text>
+        <text x="260" y="152" font-size="13" font-family="var(--f-body)" fill="var(--muted)">AI interviews 250</text>
+        <text x="260" y="170" font-size="13" font-family="var(--f-body)" fill="var(--muted)">lapsed buyers in hours</text>
+
+        <rect x="490" y="72" width="200" height="118" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="510" y="102" font-size="12" font-family="var(--f-mono)" fill="var(--accent)">03</text>
+        <text x="510" y="128" font-size="21" font-weight="700" fill="var(--ink)">Win back</text>
+        <text x="510" y="152" font-size="13" font-family="var(--f-body)" fill="var(--muted)">Reason-matched offer</text>
+        <text x="510" y="170" font-size="13" font-family="var(--f-body)" fill="var(--muted)">in the Pogo app</text>
+
+        <rect x="710" y="72" width="200" height="118" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="730" y="102" font-size="12" font-family="var(--f-mono)" fill="var(--accent)">04</text>
+        <text x="730" y="128" font-size="21" font-weight="700" fill="var(--ink)">Prove</text>
+        <text x="730" y="152" font-size="13" font-family="var(--f-body)" fill="var(--muted)">Receipts vs. a holdout</text>
+        <text x="730" y="170" font-size="13" font-family="var(--f-body)" fill="var(--muted)">show true lift</text>
+      </g>
+      <line x1="221" y1="131" x2="238" y2="131" stroke="var(--faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="431" y1="131" x2="488" y2="131" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ara)"/>
+      <line x1="691" y1="131" x2="708" y2="131" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ara)"/>
+      <!-- feedback -->
+      <path d="M810,190 C810,268 125,268 125,193" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 5" marker-end="url(#ara)"/>
+      <rect x="370" y="250" width="200" height="28" rx="14" fill="var(--surface)" stroke="var(--accent-line)"/>
+      <text x="470" y="269" text-anchor="middle" font-family="var(--f-body)" font-size="12.5" fill="var(--accent)">Results pick the next segment</text>
+    </svg>
+  </div>
+
+  <div class="two-col" style="margin-top:56px">
+    <div class="prose">
+      <p class="pull">Research tells a brand what to do. Recall lets it do it, and shows the result in the same place.</p>
+    </div>
+    <div class="prose">
+      <p><strong>Pogo's data foundation makes this possible.</strong> 3M+ opted-in US consumers, roughly 1 in 150 US shopping trips, and $470B+ in observed transactions. People connect cards, receipts and retailer accounts, and they already open the app to earn.</p>
+      <p><strong>The platform already has the patterns.</strong> Signals sits in the left navigation. Studies, the AI agent, chart cards and respondent videos already exist. Recall reuses all of them rather than inventing a new product.</p>
+      <p><strong>The market is moving toward closed loops.</strong> AI interview platforms are being valued as core infrastructure (Salesforce is reportedly in talks to buy Listen Labs). None of them can see purchases, so none of them can prove an outcome.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LANDSCAPE -->
+<section aria-labelledby="land-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>02</b> Where it fits</span>
+    <h2 id="land-h">Everyone else owns one or two steps. Recall covers all four.</h2>
+    <p class="lede">The categories brands use today each stop somewhere. Pogo is the only one with verified purchases, live interviews and a consumer app to deliver offers, attached to the same people.</p>
+  </div>
+  <div class="matrix-wrap">
+    <table class="matrix">
+      <thead><tr><th scope="col">Category</th><th scope="col">Detect who left</th><th scope="col">Ask why</th><th scope="col">Act on it</th><th scope="col">Prove the return</th></tr></thead>
+      <tbody>
+        <tr><td>Card and receipt data panels</td><td><span class="dot y" aria-label="Yes"></span></td><td><span class="dot n" aria-label="No"></span></td><td><span class="dot n" aria-label="No"></span></td><td><span class="dot p" aria-label="Partly"></span></td></tr>
+        <tr><td>AI interview platforms</td><td><span class="dot n" aria-label="No"></span></td><td><span class="dot y" aria-label="Yes"></span></td><td><span class="dot n" aria-label="No"></span></td><td><span class="dot n" aria-label="No"></span></td></tr>
+        <tr><td>Survey panels</td><td><span class="dot p" aria-label="Partly"></span></td><td><span class="dot p" aria-label="Partly"></span></td><td><span class="dot n" aria-label="No"></span></td><td><span class="dot n" aria-label="No"></span></td></tr>
+        <tr><td>Retailer media networks</td><td><span class="dot p" aria-label="Partly"></span></td><td><span class="dot n" aria-label="No"></span></td><td><span class="dot y" aria-label="Yes"></span></td><td><span class="dot p" aria-label="Partly"></span></td></tr>
+        <tr class="us"><td>Pogo + Recall</td><td><span class="dot y" aria-label="Yes"></span></td><td><span class="dot y" aria-label="Yes"></span></td><td><span class="dot y" aria-label="Yes"></span></td><td><span class="dot y" aria-label="Yes"></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="legend"><span><i class="dot y"></i>Core strength</span><span><i class="dot p"></i>Partly, or only inside one retailer</span><span><i class="dot n"></i>Not offered</span></div>
+</section>
+
+<!-- TEAM FIT -->
+<section aria-labelledby="team-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>03</b> Team fit</span>
+    <h2 id="team-h">Built on what this team has done before.</h2>
+    <p class="lede">Recall isn't a new direction for Pogo's founders. Each of them has built a version of one piece of it.</p>
+  </div>
+  <div class="people">
+    <article class="person">
+      <div class="who"><span class="avatar">DW</span><div><h3>Dom Wong</h3><small>Co-founder &amp; CEO</small></div></div>
+      <p class="then">At Zenreach he started the ads business and built a product that tied online ad exposure to real store visits.</p>
+      <p class="now"><b>In Recall</b>The Prove step does the same thing with receipts: it ties an offer to a verified purchase.</p>
+    </article>
+    <article class="person">
+      <div class="who"><span class="avatar">OM</span><div><h3>Oskar Melking</h3><small>Co-founder &amp; CPO</small></div></div>
+      <p class="then">Led retention and engagement at Zenreach, and co-founded two beverage brands in Sweden before that.</p>
+      <p class="now"><b>In Recall</b>A retention product for the CPG brands he once was, designed to feel like a reward to members.</p>
+    </article>
+    <article class="person">
+      <div class="who"><span class="avatar">SM</span><div><h3>Shikhar Mohan</h3><small>Co-founder &amp; CTO</small></div></div>
+      <p class="then">Built Box's in-house experimentation platform and shipped 25+ growth experiments there.</p>
+      <p class="now"><b>In Recall</b>The randomized holdout is an experiment design, run on purchases instead of clicks.</p>
+    </article>
+  </div>
+</section>
+
+<!-- WALKTHROUGH -->
+<section id="walkthrough" aria-labelledby="walk-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>04</b> Walkthrough</span>
+    <h2 id="walk-h">Four screens, one story.</h2>
+    <p class="lede">The prototype follows a fictional brand, Ridgeline Protein Bar, after a price increase. Each screen below is from the live build. Click any image to enlarge it.</p>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="stage-num">01 · Detect</span>
+      <div><h3>See exactly who left, and where they went.</h3><p>Signals flags 3,120 lapsed buyers. 1,904 of them have a verified purchase of a competing bar, and the lapse curve bends sharply after the August price change.</p></div>
+      <div class="stage-stat"><div class="n">1,904</div><div class="l">switched to a competitor</div></div>
+    </div>
+    <figure class="shot" data-zoom="/case-study/assets/detect.jpg"><div class="chrome"><i></i><i></i><i></i><span>pogo · Signals / Recall</span></div><img src="/case-study/assets/detect.jpg" alt="Detect screen: four stat tiles (12,480 verified buyers, 3,120 lapsed, 1,904 switched, $1.42M revenue at risk), a bar chart of where buyers went (Northstar 46%, Fuel Co. 31%, Market Basic 23%), and a weekly lapse chart that rises after a price increase on Aug 18." width="1600" height="1000" loading="lazy"></figure>
+    <div class="notes">
+      <div class="note"><span class="tag">Verified, not claimed</span><h3>Switching comes from receipts</h3><p>Every number is a purchase Pogo observed, not something a respondent reported.</p></div>
+      <div class="note"><span class="tag">The trigger</span><h3>An annotated lapse curve</h3><p>The price-increase marker gives the team a hypothesis before a single interview runs.</p></div>
+      <div class="note"><span class="tag">One action</span><h3>"Ask why they left"</h3><p>The next step launches a study on exactly these buyers, with no audience setup.</p></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="stage-num">02 · Understand</span>
+      <div><h3>Ask 250 of them why, and have the answer by the afternoon.</h3><p>Pogo's AI Interviewer talks to verified lapsed buyers. Price is the top reason at 38%, and most price-driven switchers name a price that would bring them back.</p></div>
+      <div class="stage-stat"><div class="n">6 hrs</div><div class="l">launch to completed study</div></div>
+    </div>
+    <figure class="shot" data-zoom="/case-study/assets/understand.jpg"><div class="chrome"><i></i><i></i><i></i><span>pogo · Studies / Why did Ridgeline buyers leave?</span></div><img src="/case-study/assets/understand.jpg" alt="Study screen: an insight callout saying price, not product, is driving most switching, and a bar chart of reasons (price 38%, taste 24%, out of stock 19%, higher-protein option 12%, other 7%) with representative quotes below." width="1600" height="1000" loading="lazy"></figure>
+    <div class="quote-row">
+      <div class="quote"><span class="chip" style="--c:var(--accent)">Price went up</span><q>When it jumped to $3.29 I just grabbed the Northstar next to it.</q><span class="by">Tasha M., 34 · Columbus, OH</span></div>
+      <div class="quote"><span class="chip" style="--c:var(--green)">Higher-protein option</span><q>I still like the bar, but I can get more protein for the same money now.</q><span class="by">Daniel R., 29 · Austin, TX</span></div>
+      <div class="quote"><span class="chip" style="--c:var(--coral)">Out of stock</span><q>My store was out for two weeks, so I tried something else and stuck with it.</q><span class="by">Monica L., 41 · Phoenix, AZ</span></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="stage-num">03 · Win back</span>
+      <div><h3>Turn each reason into a segment, and each segment into an offer.</h3><p>Interview answers become three ready-made segments. The team sends price-sensitive switchers $1.50 back on their next bar for 14 days, with 10% held out as a control.</p></div>
+      <div class="stage-stat"><div class="n">724</div><div class="l">price-sensitive switchers</div></div>
+    </div>
+    <div class="split">
+      <figure class="shot" data-zoom="/case-study/assets/winback.jpg"><div class="chrome"><i></i><i></i><i></i><span>pogo · Signals / Recall / Campaign</span></div><img src="/case-study/assets/winback.jpg" alt="Campaign builder: segment list on the left (price-sensitive 724, out-of-stock 362, taste-change 457), offer settings in the middle ($1.50 cashback, 14 days, 10% holdout) and a forecast on the right (21–27% expected return, $4.10 per return, $186K projected revenue)." width="1600" height="1000" loading="lazy"></figure>
+      <figure class="phone-fig"><img src="/case-study/assets/phone.jpg" alt="Pogo consumer app preview showing a Ridgeline offer card: Get $1.50 back, Earn 150 points, Expires in 14 days, Activate button." width="312" height="496" data-zoom="/case-study/assets/phone.jpg" loading="lazy"><figcaption>What the member sees in the Pogo app. Cashback pays only after a receipt-verified purchase.</figcaption></figure>
+    </div>
+    <div class="notes">
+      <div class="note"><span class="tag">Reason → segment</span><h3>Offers match the cause</h3><p>A discount for price switchers, a "we're back in stock" note for availability lapsers.</p></div>
+      <div class="note"><span class="tag">Measured by default</span><h3>Holdout is on from the start</h3><p>A 10% randomized control is the default, so every campaign can show true lift.</p></div>
+      <div class="note"><span class="tag">Honest forecast</span><h3>Labeled as modeled</h3><p>Forecasts show ranges and say "modeled" so nobody mistakes them for results.</p></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="stage-num">04 · Prove</span>
+      <div><h3>Thirty days later, receipts show who actually came back.</h3><p>193 of 724 offered buyers bought Ridgeline again: 26.7% against 6.2% in the holdout. The agent then recommends the next segment to target.</p></div>
+      <div class="stage-stat"><div class="n">+20.5 pts</div><div class="l">lift vs. holdout</div></div>
+    </div>
+    <figure class="shot" data-zoom="/case-study/assets/prove.jpg"><div class="chrome"><i></i><i></i><i></i><span>pogo · Signals / Recall / Results</span></div><img src="/case-study/assets/prove.jpg" alt="Results screen: 193 returned, +20.5 point lift, $3.86 cost per return, 5.1x ROI; a cumulative return curve for treatment versus holdout; a table of receipt-verified purchases; and the Pogo agent recommending out-of-stock lapsers as the next segment." width="1600" height="1000" loading="lazy"></figure>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" aria-labelledby="res-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>05</b> The demo numbers</span>
+    <h2 id="res-h">What a successful campaign looks like.</h2>
+    <p class="lede">These are the prototype's illustrative results for the fictional Ridgeline campaign. They show the shape of the story Recall would tell a brand, not a forecast for any real one.</p>
+  </div>
+
+  <div class="results">
+    <div class="panel chart">
+      <h3>Cumulative receipt-verified returns</h3>
+      <p class="sub">Share of each group with a verified Ridgeline purchase, days 0–30</p>
+      <svg viewBox="0 0 700 262" role="img" aria-labelledby="c-t c-d">
+        <title id="c-t">Offered buyers versus holdout</title>
+        <desc id="c-d">Offered buyers climb quickly to 26.7% returned by day 30. The holdout rises slowly to 6.2%.</desc>
+        <g class="grid">
+          <line x1="44" y1="14" x2="624" y2="14"/><line x1="44" y1="86" x2="624" y2="86"/><line x1="44" y1="158" x2="624" y2="158"/><line x1="44" y1="230" x2="624" y2="230"/>
+        </g>
+        <text x="36" y="18" text-anchor="end">30%</text><text x="36" y="90" text-anchor="end">20%</text><text x="36" y="162" text-anchor="end">10%</text><text x="36" y="234" text-anchor="end">0%</text>
+        <text x="44" y="252" text-anchor="middle">Day 0</text><text x="237" y="252" text-anchor="middle">Day 10</text><text x="431" y="252" text-anchor="middle">Day 20</text><text x="624" y="252" text-anchor="middle">Day 30</text>
+        <path d="M44.0,230.0 L53.7,219.2 L63.3,209.0 L73.0,199.4 L82.7,190.3 L92.3,181.7 L102.0,173.5 L111.7,165.8 L121.3,158.5 L131.0,151.6 L140.7,145.0 L150.3,138.8 L160.0,133.0 L169.7,127.5 L179.3,122.2 L189.0,117.3 L198.7,112.6 L208.3,108.2 L218.0,104.0 L227.7,100.0 L237.3,96.3 L247.0,92.7 L256.7,89.4 L266.3,86.2 L276.0,83.2 L285.7,80.4 L295.3,77.7 L305.0,75.1 L314.7,72.7 L324.3,70.5 L334.0,68.3 L343.7,66.3 L353.3,64.3 L363.0,62.5 L372.7,60.8 L382.3,59.2 L392.0,57.6 L401.7,56.2 L411.3,54.8 L421.0,53.5 L430.7,52.3 L440.3,51.1 L450.0,50.0 L459.7,48.9 L469.3,47.9 L479.0,47.0 L488.7,46.1 L498.3,45.3 L508.0,44.5 L517.7,43.8 L527.3,43.0 L537.0,42.4 L546.7,41.7 L556.3,41.1 L566.0,40.6 L575.7,40.0 L585.3,39.5 L595.0,39.0 L604.7,38.6 L614.3,38.2 L624.0,37.8 L624.0,230.0 Z" fill="var(--accent)" fill-opacity=".1"/>
+        <path d="M44.0,230.0 L53.7,219.2 L63.3,209.0 L73.0,199.4 L82.7,190.3 L92.3,181.7 L102.0,173.5 L111.7,165.8 L121.3,158.5 L131.0,151.6 L140.7,145.0 L150.3,138.8 L160.0,133.0 L169.7,127.5 L179.3,122.2 L189.0,117.3 L198.7,112.6 L208.3,108.2 L218.0,104.0 L227.7,100.0 L237.3,96.3 L247.0,92.7 L256.7,89.4 L266.3,86.2 L276.0,83.2 L285.7,80.4 L295.3,77.7 L305.0,75.1 L314.7,72.7 L324.3,70.5 L334.0,68.3 L343.7,66.3 L353.3,64.3 L363.0,62.5 L372.7,60.8 L382.3,59.2 L392.0,57.6 L401.7,56.2 L411.3,54.8 L421.0,53.5 L430.7,52.3 L440.3,51.1 L450.0,50.0 L459.7,48.9 L469.3,47.9 L479.0,47.0 L488.7,46.1 L498.3,45.3 L508.0,44.5 L517.7,43.8 L527.3,43.0 L537.0,42.4 L546.7,41.7 L556.3,41.1 L566.0,40.6 L575.7,40.0 L585.3,39.5 L595.0,39.0 L604.7,38.6 L614.3,38.2 L624.0,37.8" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M44.0,230.0 L624.0,185.4" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 5"/>
+        <circle cx="624" cy="37.8" r="4.5" fill="var(--accent)"/><circle cx="624" cy="185.4" r="4" fill="var(--muted)"/>
+        <text x="634" y="42" class="lbl-t">26.7%</text><text x="634" y="190" class="lbl-c">6.2%</text>
+        <line x1="604" y1="44" x2="604" y2="182" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 3"/>
+        <text x="596" y="116" text-anchor="end" class="lbl-t">+20.5 pts</text>
+        <g transform="translate(60,30)"><rect width="10" height="3" y="-4" fill="var(--accent)"/><text x="16" y="0">Offered buyers</text><rect x="122" width="10" height="3" y="-4" fill="var(--muted)"/><text x="138" y="0">Holdout</text></g>
+      </svg>
+    </div>
+
+    <div class="panel">
+      <h3>From signal to sale</h3>
+      <p class="sub">How the 1,904 switchers flowed through the campaign</p>
+      <div class="funnel">
+        <div class="f-row"><div class="f-top"><span>Switched to a competitor</span><b>1,904</b></div><div class="f-bar"><i style="width:100%"></i></div></div>
+        <div class="f-row"><div class="f-top"><span>Interviewed (sample)</span><b>250</b></div><div class="f-bar"><i style="width:13.1%;opacity:.85"></i></div></div>
+        <div class="f-row"><div class="f-top"><span>Price-sensitive segment, offered</span><b>724</b></div><div class="f-bar"><i style="width:38%;opacity:.75"></i></div></div>
+        <div class="f-row"><div class="f-top"><span>Came back, receipt-verified</span><b>193</b></div><div class="f-bar"><i style="width:10.1%;background:var(--green)"></i></div></div>
+        <div class="f-row"><div class="f-top"><span>Bought again after returning</span><b>58%</b></div><div class="f-bar"><i style="width:58%;background:var(--green);opacity:.7"></i></div></div>
+      </div>
+      <p class="disclaimer" style="margin-top:4px">The interview sample and offered segment overlap; bars are scaled to the 1,904 switchers, except the last row, which is a share of returners.</p>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><span class="k">Returned</span><span class="v">193</span><span class="badge obs">Observed</span></div>
+    <div class="kpi"><span class="k">Cost per return</span><span class="v">$3.86</span><span class="badge obs">Campaign cost</span></div>
+    <div class="kpi"><span class="k">Paid to Pogo members</span><span class="v">$1,086</span><span class="badge obs">Rewards</span></div>
+    <div class="kpi"><span class="k">ROI, annualized</span><span class="v">5.1x</span><span class="badge mod">Modeled</span></div>
+  </div>
+  <p class="disclaimer">All figures are mock data for a fictional brand. Annualized incremental revenue in the demo is $214K (modeled), against a pre-launch projection of $186K.</p>
+</section>
+
+<!-- DECISIONS -->
+<section aria-labelledby="dec-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>06</b> Design decisions</span>
+    <h2 id="dec-h">Choices that make it believable to a CPG buyer.</h2>
+  </div>
+  <div class="decisions">
+    <article class="dec"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="16" r="3"/></svg></span><h3>Built inside Pogo's own UI</h3><p class="why">Recall lives under Signals and reuses the platform's chart cards, study tabs, respondent quotes and agent chat. It reads as the next release, not a separate tool.</p></article>
+    <article class="dec"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/><rect x="4" y="13" width="6" height="8" rx="1"/><rect x="14" y="13" width="6" height="8" rx="1"/></svg></span><h3>A holdout on every campaign</h3><p class="why">Insights teams distrust promo results that lack a control. A randomized holdout by default turns "it worked" into a lift number a finance team can accept.</p></article>
+    <article class="dec"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><h3>Pay only on verified purchases</h3><p class="why">Members get cashback after their receipt is checked. Brands only pay for real returns, and members get a clear, fair reward.</p></article>
+    <article class="dec"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h3>"Observed" and "modeled" labeled apart</h3><p class="why">Every number says where it came from. Forecasts show ranges. This protects the trust that Pogo's "human truth" positioning depends on.</p></article>
+  </div>
+
+  <div class="tour-split" style="margin-top:56px">
+    <div class="prose">
+      <span class="eyebrow">Guided tour</span>
+      <h3 style="font-size:1.6rem">An 11-step tour does the pitch for you.</h3>
+      <p>The prototype opens with a guided tour that moves between screens on its own, so an executive can follow the whole story by pressing Next. A tour overview lets them jump to any step, and a help button brings it back at any time.</p>
+      <div class="steps">
+        <div><b>01 Detect</b>3 steps</div><div><b>02 Understand</b>3 steps</div><div><b>03 Win back</b>3 steps</div><div><b>04 Prove</b>2 steps</div>
+      </div>
+    </div>
+    <img src="/case-study/assets/tour.jpg" alt="Tour overview dialog listing eleven steps grouped under Detect, Understand, Win back and Prove." width="290" height="364" data-zoom="/case-study/assets/tour.jpg" loading="lazy">
+  </div>
+</section>
+
+<!-- BUSINESS -->
+<section id="business" aria-labelledby="biz-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>07</b> Business case</span>
+    <h2 id="biz-h">Why this matters for Pogo, not only for the brand.</h2>
+  </div>
+  <div class="money">
+    <div class="panel"><span class="eyebrow">Bigger budget</span><p class="big">From research spend to promotion spend</p><p class="muted">Insights budgets pay for studies. Recall competes for the much larger trade and marketing budgets brands use to win customers back.</p></div>
+    <div class="panel"><span class="eyebrow">Recurring revenue</span><p class="big">From projects to an always-on product</p><p class="muted">Lapse detection runs every week. Each brand gets a standing reason to log in, and Pogo gets a subscription instead of one-off studies.</p></div>
+    <div class="panel"><span class="eyebrow">Healthier panel</span><p class="big">Members earn more for real behavior</p><p class="muted">Offers pay members for purchases they choose to make. That helps the payout complaints in Pogo's app reviews and keeps the people Pogo interviews engaged.</p></div>
+  </div>
+  <div class="panel" style="margin-top:20px">
+    <h3>A pricing idea to test</h3>
+    <p class="muted">A Recall subscription per brand that covers lapse detection and studies, plus a fee for each receipt-verified return. Pogo earns more when the campaign works, which is the clearest possible sales message. This is a hypothesis to test in the pilot, not a recommendation on price.</p>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section aria-labelledby="risk-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>08</b> Risks</span>
+    <h2 id="risk-h">What could go wrong, and how to handle it.</h2>
+  </div>
+  <div class="risks">
+    <div class="risk"><h3>Offers feel like spam to members</h3><p>Cap offers per member per month, show only brands the member has bought before, and let members turn categories off.</p><span class="sev h">High</span></div>
+    <div class="risk"><h3>Privacy and consent</h3><p>Brands never see individuals. They see segments with minimum sizes, and offers go through Pogo. Members opt in to brand offers separately.</p><span class="sev h">High</span></div>
+    <div class="risk"><h3>Small segments, noisy lift</h3><p>Set a minimum segment size and holdout, and show confidence once the sample allows it. The prototype already avoids claiming significance.</p><span class="sev m">Medium</span></div>
+    <div class="risk"><h3>Channel conflict with retailers</h3><p>Position Recall as cashback that works at any retailer, so it adds to retailer media rather than competing with it.</p><span class="sev m">Medium</span></div>
+    <div class="risk"><h3>Cashback payout reliability</h3><p>Recall depends on fast, reliable payouts. Pair launch with the payout and support fixes raised in app reviews.</p><span class="sev m">Medium</span></div>
+  </div>
+</section>
+
+<!-- PILOT -->
+<section id="pilot" aria-labelledby="pilot-h">
+  <div class="sec-head">
+    <span class="eyebrow"><b>09</b> Next step</span>
+    <h2 id="pilot-h">A six-week pilot with one existing CPG customer.</h2>
+    <p class="lede">Start with a brand that already runs studies on Pogo, one lapsed segment, and one offer. Keep it small enough to run by hand where needed.</p>
+  </div>
+  <div class="plan">
+    <div class="wk"><div class="bar"></div><span class="when">Weeks 1–2</span><h3>Detect and understand</h3><ul><li>Pick a brand and a lapsed segment</li><li>Run a standard AI interview study</li><li>Agree on the offer and holdout size</li></ul></div>
+    <div class="wk"><div class="bar"></div><span class="when">Weeks 3–4</span><h3>Win back</h3><ul><li>Deliver the offer in the Pogo app</li><li>Pay cashback on verified receipts</li><li>Track activations and redemptions daily</li></ul></div>
+    <div class="wk"><div class="bar"></div><span class="when">Weeks 5–6</span><h3>Prove</h3><ul><li>Compare returns against the holdout</li><li>Share a results readout with the brand</li><li>Decide on pricing and a second segment</li></ul></div>
+  </div>
+  <div class="criteria" aria-label="Success criteria">
+    <span>Lift vs. holdout <b>≥ 10 pts</b></span>
+    <span>Cost per verified return <b>&lt; $5</b></span>
+    <span>Member offer rating <b>≥ 4.5</b></span>
+    <span>Brand asks for a second campaign <b>yes</b></span>
+  </div>
+</section>
+
+<div class="closing">
+  <div>
+    <h2>See it for yourself.</h2>
+    <p>The guided tour walks through all four stages in about three minutes.</p>
+  </div>
+  <a class="btn btn-primary" href="https://pogo-recall.vercel.app/" target="_blank" rel="noopener">Open Pogo Recall ↗</a>
+</div>
+
+<footer>
+  <span>Pogo Recall · concept case study by Temi · October 2026</span>
+  <span>Ridgeline, Northstar, Fuel Co. and Market Basic are fictional. All campaign figures are mock data.</span>
+</footer>
+</main>
+
+<dialog class="lb" id="lb" aria-label="Enlarged screenshot"><button type="button" id="lb-close">Close</button><img id="lb-img" alt=""></dialog>
+<script>
+(function(){
+  var lb=document.getElementById('lb'), img=document.getElementById('lb-img');
+  document.querySelectorAll('[data-zoom]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var src=el.getAttribute('data-zoom'); var inner=el.querySelector('img')||el;
+      img.src=src; img.alt=inner.getAttribute('alt')||'';
+      if(lb.showModal){lb.showModal();}
+    });
+  });
+  document.getElementById('lb-close').addEventListener('click',function(){lb.close();});
+  lb.addEventListener('click',function(e){if(e.target===lb)lb.close();});
+})();
+</script>
+
+</body>
+</html>

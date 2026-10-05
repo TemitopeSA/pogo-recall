@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/case-study", "destination": "/case-study/index.html" },
+    { "source": "/case-study/", "destination": "/case-study/index.html" },
+    { "source": "/((?!case-study/).*)", "destination": "/index.html" }
+  ]
 }
